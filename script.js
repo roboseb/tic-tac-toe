@@ -22,7 +22,7 @@ const GameBoard = (() => {
         legalMoves.push(space);
       }
     }
-    console.log(legalMoves);
+    //console.log(legalMoves);
     return legalMoves;
   };
   
@@ -38,26 +38,23 @@ const GameBoard = (() => {
         if (spaces[i] === null && Game.isActive()) {
           
           const currentPlayer = Game.getCurrentPlayer().name;
+
           space.style.backgroundColor = 'skyblue';
           space.innerText = currentPlayer;
           spaces[i] = currentPlayer;
           
-          if (checkWin()) Game.toggleActive();
+          if (checkWin(Game.returnPlayer(), spaces)) Game.toggleActive();
           
           if (Game.isActive()) {
             Game.switchPlayer();
-            Game.computerPlay();
+            Game.computerPlayAverage();
             
-            if (checkWin()) {
+            if (checkWin(Game.returnComputer(), spaces)) {
               Game.toggleActive();
             } else {
               Game.switchPlayer();
             }
           }
-          
-
-          
-          
         }
       });
       boardDisplay.appendChild(space);
@@ -66,7 +63,7 @@ const GameBoard = (() => {
 
   display();
 
-  const checkWin = () => {
+  const checkWin  = (player, board) => {
     let rowCheck = 0;
     let colCheck = 0;
     let forDiagCheck = 0;
@@ -75,7 +72,7 @@ const GameBoard = (() => {
     //Iterate through each row searching for three of the current player's letters.
     for (let i = 0; i < 9; i += 3) {
       for (let j = i; j < i + 3; j++) {
-        if (spaces[j] === Game.getCurrentPlayer().name) {
+        if (board[j] === player.name) {
           rowCheck++;
         }
       }
@@ -88,7 +85,7 @@ const GameBoard = (() => {
     //Iterate through each column searching for three of the current player's letters.
     for (let i = 0; i < 3; i++) {
       for (let j = i; j < i + 7; j+=3) {
-        if (spaces[j] === Game.getCurrentPlayer().name) {
+        if (board[j] === player.name) {
           colCheck++;
         }
       }
@@ -100,16 +97,20 @@ const GameBoard = (() => {
     }
     //Check for a backwards diagonal win.
     for (let i = 0; i < 9; i += 4) {
-      if (spaces[i] === Game.getCurrentPlayer().name) {
+      if (board[i] === player.name) {
         backDiagCheck++;
-        if (backDiagCheck === 3) return true;
+        if (backDiagCheck === 3) {
+          return true;
+        }
       }
     }
     //Check for a forwards diagonal win.
     for (let i = 2; i < 7; i += 2) {
-      if (spaces[i] === Game.getCurrentPlayer().name) {
+      if (board[i] === player.name) {
         forDiagCheck++;
-        if (forDiagCheck === 3) return true;
+        if (forDiagCheck === 3) {
+          return true;
+        }
       }
     }
     //Return false if no win condition is met.
@@ -121,7 +122,7 @@ const GameBoard = (() => {
     return spaceDisplays;
   }
 
-  return {getLegalMoves, display, listSpaceDisplays, spaces};
+  return {getLegalMoves, display, listSpaceDisplays, checkWin, spaces};
 })();
 
 //Create a game object with game-related functions and variables.
@@ -132,6 +133,8 @@ const Game = (() => {
   let active = false;
   let Player;
   let Computer;
+  let playerMoves = 0;
+  let playerOpen;
 
   const xButton = document.getElementById('xbutton');
   xButton.addEventListener('click', () => {
@@ -169,6 +172,14 @@ const Game = (() => {
     return currentPlayer;
   }
 
+  const returnPlayer = () => {
+    return Player;
+  }
+
+  const returnComputer = () => {
+    return Computer;
+  }
+
   const switchPlayer = () => {
     if (currentPlayer === Player) {
       currentPlayer = Computer;
@@ -176,16 +187,152 @@ const Game = (() => {
       currentPlayer = Player;
     }
   }
-  const computerPlay = () => {
+  const computerPlayRandom = () => {
     const choices = GameBoard.getLegalMoves();
     const choice = choices[Math.floor(Math.random() * choices.length)];
-    console.log(choice);
     currentSpace = document.getElementById('boarddisplay').children[choice];
     currentSpace.innerText = Computer.name;
     GameBoard.spaces[choice] = Computer.name;
   }
 
-  return {getCurrentPlayer, switchPlayer, isActive, computerPlay, toggleActive, Player, Computer, active};
+  const computerPlayAverage = () => {
+    playerMoves ++;
+ 
+    const choices = GameBoard.getLegalMoves();
+    const boardDisplay = document.getElementById('boarddisplay').children;
+
+    //Check for a single winning move.
+    for (let choice of choices) {
+      currentSpace = boardDisplay[choice];
+      currentSpace.innerText = Computer.name;
+      GameBoard.spaces[choice] = Computer.name;
+      
+      if (GameBoard.checkWin(Computer, GameBoard.spaces)) {
+        return;
+      } else {
+        currentSpace.innerText = '';
+        GameBoard.spaces[choice] = null;
+      }
+    }
+
+    //Check for a single block from losing.
+    setCurrentPlayer(Player);
+    for (let choice of choices) {
+      currentSpace = boardDisplay[choice];
+      currentSpace.innerText = Player.name;
+      GameBoard.spaces[choice] = Player.name;
+  
+      if (GameBoard.checkWin(Player, GameBoard.spaces)) {
+        setCurrentPlayer(Computer);
+    
+        currentSpace.innerText = Computer.name;
+        GameBoard.spaces[choice] = Computer.name;
+        return;
+      } else {
+     
+        currentSpace.innerText = '';
+        GameBoard.spaces[choice] = null;
+      }
+    }
+    setCurrentPlayer(Computer);
+
+    //If no move blocks or wins immediately, play a random move.
+    const choice = choices[Math.floor(Math.random() * choices.length)];
+    currentSpace = document.getElementById('boarddisplay').children[choice];
+    currentSpace.innerText = Computer.name;
+    GameBoard.spaces[choice] = Computer.name;
+  }
+
+  const computerPlayPerfect = () => {
+
+  };
+
+  const emptyIndexes = board => {
+    let legalMoves = [];
+    for (let space in board) {
+      if (!board[space]) {
+        legalMoves.push(space);
+      }
+    }
+    //console.log(legalMoves);
+    return legalMoves;
+  
+  }
+
+  const minimax = (newBoard, player) => {
+    const availSpots = GameBoard.getLegalMoves();
+    console.log(GameBoard.getLegalMoves().length);
+    
+    //Check for board terminal state.
+    if (GameBoard.checkWin(Player, newBoard)) {
+      console.log('you hit neg')
+      return {score: -10};
+    } else if (GameBoard.checkWin(Computer, newBoard)) {
+      console.log('you hit pos')
+      return {score: 10};
+    } else if (availSpots.length === 0) {
+      console.log('you hit zero')
+      return {score: 0};
+    }
+
+    let moves = [];
+
+    for (let i = 0; i < availSpots.length; i++){
+
+      //create an object for each and store the index of that spot. 
+      let move = {};
+      move.index = newBoard[availSpots[i]];
+  
+      // set the empty spot to the current player
+      newBoard[availSpots[i]] = player;
+  
+      /*collect the score resulted from calling minimax 
+        on the opponent of the current player*/
+      if (player === Computer) {
+        let result = minimax(newBoard, Player);
+        move.score = result.score;
+      } else {
+        let result = minimax(newBoard, Computer);
+        move.score = result.score;
+      }
+  
+      // reset the spot to empty
+      newBoard[availSpots[i]] = move.index;
+  
+      // push the object to the array
+      moves.push(move);
+
+      let bestMove;
+      if(player === Computer){
+        let bestScore = -10000;
+        for(let i = 0; i < moves.length; i++){
+          if(moves[i].score > bestScore){
+            bestScore = moves[i].score;
+            bestMove = i;
+          }
+        }
+      } else {
+    
+      // else loop over the moves and choose the move with the lowest score
+        var bestScore = 10000;
+        for(let i = 0; i < moves.length; i++){
+          if(moves[i].score < bestScore){
+            bestScore = moves[i].score;
+            bestMove = i;
+          }
+        }
+      }
+    
+    // return the chosen move (object) from the moves array
+      return moves[bestMove];
+    }
+
+
+  }
+
+  return {getCurrentPlayer, switchPlayer, isActive, computerPlayRandom, computerPlayAverage,
+           computerPlayPerfect, toggleActive,  returnPlayer, returnComputer, 
+           emptyIndexes, minimax, Player, Computer, active, playerMoves};
 
 })();
 
