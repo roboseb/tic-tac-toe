@@ -3,22 +3,12 @@ const GameBoard = (() => {
   const boardDisplay = document.getElementById('boarddisplay');
   
 
-  let spaces = {
-    0: null,
-    1: null,
-    2: null,
-    3: null,
-    4: null,
-    5: null,
-    6: null,
-    7: null,
-    8: null
-  };
+  let spaces = [0,1,2,3,4,5,6,7,8];
 
   const getLegalMoves = () => {
     let legalMoves = []
     for (let space in spaces) {
-      if (!spaces[space]) {
+      if (spaces[space] != 'X' && spaces[space] != 'O') {
         legalMoves.push(space);
       }
     }
@@ -35,7 +25,7 @@ const GameBoard = (() => {
 
       //Add relevant letter to space and pass turn.
       space.addEventListener('click', () => {
-        if (spaces[i] === null && Game.isActive()) {
+        if (spaces[i] != 'X' && spaces[i] != 'O' && Game.isActive()) {
           
           const currentPlayer = Game.getCurrentPlayer().name;
 
@@ -47,7 +37,7 @@ const GameBoard = (() => {
           
           if (Game.isActive()) {
             Game.switchPlayer();
-            Game.computerPlayAverage();
+            Game.computerPlayPerfect();
             
             if (checkWin(Game.returnComputer(), spaces)) {
               Game.toggleActive();
@@ -211,7 +201,7 @@ const Game = (() => {
         return;
       } else {
         currentSpace.innerText = '';
-        GameBoard.spaces[choice] = null;
+        GameBoard.spaces[choice] = choice;
       }
     }
 
@@ -231,7 +221,7 @@ const Game = (() => {
       } else {
      
         currentSpace.innerText = '';
-        GameBoard.spaces[choice] = null;
+        GameBoard.spaces[choice] = choice;
       }
     }
     setCurrentPlayer(Computer);
@@ -244,13 +234,17 @@ const Game = (() => {
   }
 
   const computerPlayPerfect = () => {
+    const boardDisplay = document.getElementById('boarddisplay').children;
 
+    bestMove = minimax(GameBoard.spaces, Computer);
+    boardDisplay[bestMove.index].innerText = Computer.name;
+    GameBoard.spaces[bestMove.index] = Computer.name;
   };
 
   const emptyIndexes = board => {
     let legalMoves = [];
     for (let space in board) {
-      if (!board[space]) {
+      if (board[space] != 'X' && board[space] != 'O') {
         legalMoves.push(space);
       }
     }
@@ -259,41 +253,52 @@ const Game = (() => {
   
   }
 
+  const test = () => {
+    return minimax(GameBoard.spaces, Computer);
+  }
+
   const minimax = (newBoard, player) => {
-    const availSpots = GameBoard.getLegalMoves();
-    console.log(GameBoard.getLegalMoves().length);
+    const availSpots = emptyIndexes(newBoard);
     
+    //console.log(GameBoard.getLegalMoves().length);
+    
+    //console.log(`${newBoard[0]} ${newBoard[1]} ${newBoard[2]}\n${newBoard[3]} ${newBoard[4]} ${newBoard[5]}\n${newBoard[6]} ${newBoard[7]} ${newBoard[8]}`);
     //Check for board terminal state.
     if (GameBoard.checkWin(Player, newBoard)) {
-      console.log('you hit neg')
+      //console.log('you hit neg')
       return {score: -10};
     } else if (GameBoard.checkWin(Computer, newBoard)) {
-      console.log('you hit pos')
+      //console.log('you hit pos')
       return {score: 10};
     } else if (availSpots.length === 0) {
-      console.log('you hit zero')
+      //console.log('you hit zero')
       return {score: 0};
     }
 
     let moves = [];
 
-    for (let i = 0; i < availSpots.length; i++){
+    for (let i = 0; i < availSpots.length; i++) {
+      //console.log(availSpots.length);
 
       //create an object for each and store the index of that spot. 
       let move = {};
       move.index = newBoard[availSpots[i]];
+      
   
       // set the empty spot to the current player
-      newBoard[availSpots[i]] = player;
+      newBoard[availSpots[i]] = player.name;
+      //boardDisplay[availSpots[i]].innerText = player.name;
   
       /*collect the score resulted from calling minimax 
         on the opponent of the current player*/
       if (player === Computer) {
         let result = minimax(newBoard, Player);
         move.score = result.score;
+        //console.log(moves);
       } else {
         let result = minimax(newBoard, Computer);
         move.score = result.score;
+        //console.log(moves);
       }
   
       // reset the spot to empty
@@ -301,38 +306,42 @@ const Game = (() => {
   
       // push the object to the array
       moves.push(move);
-
-      let bestMove;
-      if(player === Computer){
-        let bestScore = -10000;
-        for(let i = 0; i < moves.length; i++){
-          if(moves[i].score > bestScore){
-            bestScore = moves[i].score;
-            bestMove = i;
-          }
-        }
-      } else {
-    
-      // else loop over the moves and choose the move with the lowest score
-        var bestScore = 10000;
-        for(let i = 0; i < moves.length; i++){
-          if(moves[i].score < bestScore){
-            bestScore = moves[i].score;
-            bestMove = i;
-          }
-        }
-      }
-    
-    // return the chosen move (object) from the moves array
-      return moves[bestMove];
     }
 
-
+    let bestMove;
+    if(player === Computer){
+      let bestScore = -10000;
+      for(let i = 0; i < moves.length; i++){
+        if(moves[i].score > bestScore){
+          bestScore = moves[i].score;
+          bestMove = i;
+        }
+      }
+    } else {
+  
+    // else loop over the moves and choose the move with the lowest score
+      var bestScore = 10000;
+      for(let i = 0; i < moves.length; i++){
+        if(moves[i].score < bestScore){
+          bestScore = moves[i].score;
+          bestMove = i;
+        }
+      }
+    }
+  
+    // return the chosen move (object) from the moves array
+    //console.log(moves);
+    //console.log(bestMove);
+    return moves[bestMove];
   }
+
+  
+
+  
 
   return {getCurrentPlayer, switchPlayer, isActive, computerPlayRandom, computerPlayAverage,
            computerPlayPerfect, toggleActive,  returnPlayer, returnComputer, 
-           emptyIndexes, minimax, Player, Computer, active, playerMoves};
+           emptyIndexes, minimax, test, Player, Computer, active, playerMoves};
 
 })();
 
