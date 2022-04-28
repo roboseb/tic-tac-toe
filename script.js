@@ -1,9 +1,14 @@
 //Display and update the game board.
 const GameBoard = (() => {
   const boardDisplay = document.getElementById('boarddisplay');
-  
+  const tiesDisplay = document.getElementById('ties');
+  const lossesDisplay = document.getElementById('losses');
+  const winsDisplay = document.getElementById('wins');
 
   let spaces = [0,1,2,3,4,5,6,7,8];
+  let ties = 0;
+  let losses = 0;
+  let wins = 0;
 
   const getLegalMoves = () => {
     let legalMoves = []
@@ -28,19 +33,26 @@ const GameBoard = (() => {
         if (spaces[i] != 'X' && spaces[i] != 'O' && Game.isActive()) {
           
           const currentPlayer = Game.getCurrentPlayer().name;
-
-          space.style.backgroundColor = 'skyblue';
           space.innerText = currentPlayer;
           spaces[i] = currentPlayer;
           
-          if (checkWin(Game.returnPlayer(), spaces)) Game.toggleActive();
-          
+          //Check for a player win or a tie and end the game accordingly.
+          if (checkWin(Game.returnPlayer(), spaces)) {
+            Game.toggleActive();
+            endGame();
+          } else if (getLegalMoves().length === 0) {
+            Game.toggleActive();
+            endGame();
+          }
+          //If the game is not ovspaceer, have the computer play 
+          //a turn and end the game accordingly.
           if (Game.isActive()) {
             Game.switchPlayer();
             Game.computerPlayPerfect();
             
             if (checkWin(Game.returnComputer(), spaces)) {
               Game.toggleActive();
+              endGame();
             } else {
               Game.switchPlayer();
             }
@@ -52,6 +64,37 @@ const GameBoard = (() => {
   }
 
   display();
+
+  const resetButton = document.getElementById('resetbutton');
+  resetButton.addEventListener('click', () => {
+    resetBoard();
+  });
+
+  const resetBoard = () => {
+    for (let i = 0; i < spaces.length; i++) {
+      spaces[i] = i;
+      boardDisplay.children[i].innerText = '';
+      if (!Game.isActive()){
+        Game.toggleActive();
+      }
+    }
+  }
+
+  const endGame = () => {
+    if (checkWin(Game.returnComputer(), spaces) === true) {
+      losses++;
+      lossesDisplay.innerText = `Losses: ${losses}`;
+      alert('I have reigned victorious yet again');
+    } else if (checkWin(Game.returnPlayer(), spaces) === true) {
+      wins++;
+      winsDisplay.innerText = `Wins: ${wins}`;
+      alert('how is this possible? You have beaten me.')
+    } else {
+      ties++;
+      tiesDisplay.innerText = `Ties: ${ties}`;
+      alert('The only certainty in life is mutually assured destruction')
+    }
+  }
 
   const checkWin  = (player, board) => {
     let rowCheck = 0;
@@ -112,7 +155,8 @@ const GameBoard = (() => {
     return spaceDisplays;
   }
 
-  return {getLegalMoves, display, listSpaceDisplays, checkWin, spaces};
+  return {getLegalMoves, display, listSpaceDisplays, checkWin,
+          resetBoard, spaces};
 })();
 
 //Create a game object with game-related functions and variables.
@@ -125,25 +169,44 @@ const Game = (() => {
   let Computer;
   let playerMoves = 0;
   let playerOpen;
+  const symbolDisplay = document.getElementById('chosensymbol');
 
   const xButton = document.getElementById('xbutton');
   xButton.addEventListener('click', () => {
     if (!active) {
+      GameBoard.resetBoard();
       Player = createPlayer('X');
       Computer = createPlayer('O');
       setCurrentPlayer(Player);
       active = true;
+      symbolDisplay.innerText = 'X';
+    } else if (Player.name === 'O'){
+      Player = createPlayer('X');
+      Computer = createPlayer('O');
+      setCurrentPlayer(Player);
+      GameBoard.resetBoard();
+      symbolDisplay.innerText = 'X';
     }
   });
 
   const oButton = document.getElementById('obutton');
   oButton.addEventListener('click', () => {
     if (!active) {
+      GameBoard.resetBoard();
       Player = createPlayer('O');
       Computer = createPlayer('X');
       setCurrentPlayer(Player);
       active = true;
+      symbolDisplay.innerText = 'O';
+    } else if (Player.name === 'X'){
+      Player = createPlayer('O');
+      Computer = createPlayer('X');
+      setCurrentPlayer(Player);
+      GameBoard.resetBoard();
+      symbolDisplay.innerText = 'O';
     }
+
+    
   });
   
   const isActive = () => {
@@ -334,10 +397,6 @@ const Game = (() => {
     //console.log(bestMove);
     return moves[bestMove];
   }
-
-  
-
-  
 
   return {getCurrentPlayer, switchPlayer, isActive, computerPlayRandom, computerPlayAverage,
            computerPlayPerfect, toggleActive,  returnPlayer, returnComputer, 
