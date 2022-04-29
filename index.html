@@ -8,20 +8,49 @@
     <title>Seb's Tic Tac Toe</title>
 </head>
 <body>
-    <div id='container'>
+    <div id='spritecontainer'>
+        <img id='wall' src='images/wall.png'>
+        <img id='isaac' src='images/isaac.png'>
+        <img id='desk' src='images/desk.png'>
+        <img id='laptop' src='images/laptop.png'>
         
-        <div id='options'>
-            <h2 id='playerselect'>Choose Player</h2>
-            <button id='xbutton'>Play as X</button>
-            <button id='obutton'>Play as O</button>
-            <button id='resetbutton'>Retry</button>
-            <div id='chosensymbol'>Choose a symbol</div>
-            <div id='wins'>Wins: 0</div>
-            <div id='ties'>Ties: 0</div>
-            <div id='losses'>Losses: 0</div>
+        <div id='facebox'>
+            <img id='face' src='images/default.png'>
         </div>
-        <div id='boarddisplay'></div>
-    </div>
+        <div id='desktopbox'>
+            <img id='desktop' src='images/desktop.png'>
+            <div id='boarddisplay'></div>
+            <div id=dialoguebox>
+                <div id='dialogue'>
+                    /root/users/Isaac:
+                    <div id='textbox'></div>
+                </div>
+                <div id='options'>
+                    <div id='notstats'>
+                        <div id='chosensymbol'>Please choose a symbol.</div>
+                        <div id=buttons>
+                            <button id='xbutton'>Play as X</button>
+                            <button id='obutton'>Play as O</button>
+                            <button id='resetbutton'>Retry</button>
+                        </div>
+
+                        
+                    </div>
+                    
+                    <div id='stats'>
+                        <div id='wins'>Wins: 0</div>
+                        <div id='ties'>Ties: 0</div>
+                        <div id='losses'>Losses: 0</div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>     
+    
+    
+   
+   
     
     <script src='script.js'></script>
 </body>

@@ -18,7 +18,13 @@ DONE-Add win/loss/tie messages
 DONE-Add restart game button
 CANCEL (SORTA)-AI difficuly options
 DONE-Add loss counter
--Make it look like we're in some techno dungeon
--Add Isaac
--Add speech text for Isaac
--Add secret way to beat Isaac and free him
+DONE-Make it look like we're in some techno dungeon
+DONE-Add Isaac
+DONEISH-Add speech text for Isaac
+-Add secret way to beat Isaac and 'free' him
+-Add Darting eyes
+-Animate teeth
+-Add blinking
+-Add conversation trees?
+-Fix symbol aligning in game grid
+-fix sad face aspect ratio

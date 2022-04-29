@@ -33,6 +33,8 @@ const GameBoard = (() => {
         if (spaces[i] != 'X' && spaces[i] != 'O' && Game.isActive()) {
           
           const currentPlayer = Game.getCurrentPlayer().name;
+
+          console.log(currentPlayer)
           space.innerText = currentPlayer;
           spaces[i] = currentPlayer;
           
@@ -71,28 +73,37 @@ const GameBoard = (() => {
   });
 
   const resetBoard = () => {
-    for (let i = 0; i < spaces.length; i++) {
-      spaces[i] = i;
-      boardDisplay.children[i].innerText = '';
-      if (!Game.isActive()){
-        Game.toggleActive();
+    const timer = ms => new Promise(res => setTimeout(res, ms));
+
+    async function load () {
+      for (let i = 0; i < spaces.length; i++) {
+          spaces[i] = i;
+          boardDisplay.children[i].innerText = '';
+          await timer(300);
       }
     }
+
+    load();
+
+    if (!Game.isActive()){
+      Game.toggleActive();
+    }
+    Game.setCurrentPlayer(Game.returnPlayer());
   }
 
   const endGame = () => {
     if (checkWin(Game.returnComputer(), spaces) === true) {
       losses++;
       lossesDisplay.innerText = `Losses: ${losses}`;
-      alert('I have reigned victorious yet again');
+      Dialogue.displayText('loss');
     } else if (checkWin(Game.returnPlayer(), spaces) === true) {
       wins++;
       winsDisplay.innerText = `Wins: ${wins}`;
-      alert('how is this possible? You have beaten me.')
+      Dialogue.displayText('win');
     } else {
       ties++;
       tiesDisplay.innerText = `Ties: ${ties}`;
-      alert('The only certainty in life is mutually assured destruction')
+      Dialogue.displayText('tie');
     }
   }
 
@@ -179,13 +190,13 @@ const Game = (() => {
       Computer = createPlayer('O');
       setCurrentPlayer(Player);
       active = true;
-      symbolDisplay.innerText = 'X';
+      symbolDisplay.innerText = 'You are playing as X.';
     } else if (Player.name === 'O'){
       Player = createPlayer('X');
       Computer = createPlayer('O');
       setCurrentPlayer(Player);
       GameBoard.resetBoard();
-      symbolDisplay.innerText = 'X';
+      symbolDisplay.innerText = 'You are playing as X.';
     }
   });
 
@@ -197,13 +208,13 @@ const Game = (() => {
       Computer = createPlayer('X');
       setCurrentPlayer(Player);
       active = true;
-      symbolDisplay.innerText = 'O';
+      symbolDisplay.innerText = 'You are playing as O.';
     } else if (Player.name === 'X'){
       Player = createPlayer('O');
       Computer = createPlayer('X');
       setCurrentPlayer(Player);
       GameBoard.resetBoard();
-      symbolDisplay.innerText = 'O';
+      symbolDisplay.innerText = 'You are playing as O.';
     }
 
     
@@ -400,7 +411,7 @@ const Game = (() => {
 
   return {getCurrentPlayer, switchPlayer, isActive, computerPlayRandom, computerPlayAverage,
            computerPlayPerfect, toggleActive,  returnPlayer, returnComputer, 
-           emptyIndexes, minimax, test, Player, Computer, active, playerMoves};
+           emptyIndexes, minimax, test, setCurrentPlayer, Player, Computer, active, playerMoves};
 
 })();
 
@@ -409,6 +420,57 @@ const createPlayer = name => {
   return {name};
 }
 
+const Face = (() => {
+  const faces = {
+    default: 'images/default.png',
+    upset: 'images/upset.png',
+    sad: 'images/sad.png',
+    realistic: 'images/realistic.png',
+    boardFace: 'images/boardface.png',
+    bsod: 'images/bsod.png',
+    happy: 'images/happy.png'
+  }
+  const faceSprite = document.getElementById('face');
+  faceSprite.addEventListener('click', () => {
+    console.log('test')
+    faceSprite.src = faces.happy;
+  });
+})();
 
+const Desktop = (() => {
+  const desktopBox = document.getElementById('desktopbox');
+  const desktop = document.getElementById('desktop');
+
+  function updateDesktopHeight() {
+    console.log(desktop.offsetHeight);
+    desktopBox.style.height = `${desktop.offsetHeight}px`;
+  }
+
+  window.addEventListener('resize', () => {
+    updateDesktopHeight();
+  });
+
+  updateDesktopHeight();
+
+})();
+
+const Dialogue = (() => {
+  const textBox = document.getElementById('textbox');
+
+  const messages = {
+    initial: "Hi, there's a uhh, there's a computer over there. You know, if you'd like to play a game or two.",
+    tie: "Somehow, this is usually how it ends.",
+    win: "But.. but I thought it wasn't possible...",
+    loss: "I'm sorry, I didn't choose for it to end this way."
+  }
+
+  const displayText = message => {
+    textBox.innerText = messages[message];
+  }
+
+  displayText('initial');
+
+  return {displayText}
+})();
 
 
