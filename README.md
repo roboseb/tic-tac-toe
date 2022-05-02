@@ -28,3 +28,5 @@ DONEISH-Add speech text for Isaac
 -Add conversation trees?
 -Fix symbol aligning in game grid
 -fix sad face aspect ratio
+-Add scrolling dialogue for previously seen stuff
+-Isaac will only progress dialogue if you can chain together ties

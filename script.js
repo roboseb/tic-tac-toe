@@ -33,8 +33,7 @@ const GameBoard = (() => {
         if (spaces[i] != 'X' && spaces[i] != 'O' && Game.isActive()) {
           
           const currentPlayer = Game.getCurrentPlayer().name;
-
-          console.log(currentPlayer)
+          Dialogue.converse();
           space.innerText = currentPlayer;
           spaces[i] = currentPlayer;
           
@@ -73,22 +72,39 @@ const GameBoard = (() => {
   });
 
   const resetBoard = () => {
+    if (Game.isActive()) Game.toggleActive();
+
     const timer = ms => new Promise(res => setTimeout(res, ms));
 
+    //Reset board spaces with an animation.
     async function load () {
       for (let i = 0; i < spaces.length; i++) {
+        if (spaces[i] === 'X' || spaces[i] === 'O') {
           spaces[i] = i;
           boardDisplay.children[i].innerText = '';
-          await timer(300);
+          await timer(200);
+        }
+        //When finished clearing the board, blink the cells and prevent
+        //the player from clicking or hovering during this.
+          if (i === spaces.length -1) {
+            const spaceDisplays = Array.from(boardDisplay.children);
+
+            spaceDisplays.forEach(space => {
+              space.style.borderColor = 'transparent';
+              space.style.backgroundColor = 'transparent';
+              setTimeout(() => {
+                space.style.borderColor = 'green';
+                space.style.backgroundColor = null;
+                if (!Game.isActive()){
+                  Game.toggleActive();
+                }
+                Game.setCurrentPlayer(Game.returnPlayer());
+              }, 300)
+            });
+          }
       }
     }
-
     load();
-
-    if (!Game.isActive()){
-      Game.toggleActive();
-    }
-    Game.setCurrentPlayer(Game.returnPlayer());
   }
 
   const endGame = () => {
@@ -432,7 +448,6 @@ const Face = (() => {
   }
   const faceSprite = document.getElementById('face');
   faceSprite.addEventListener('click', () => {
-    console.log('test')
     faceSprite.src = faces.happy;
   });
 })();
@@ -442,7 +457,6 @@ const Desktop = (() => {
   const desktop = document.getElementById('desktop');
 
   function updateDesktopHeight() {
-    console.log(desktop.offsetHeight);
     desktopBox.style.height = `${desktop.offsetHeight}px`;
   }
 
@@ -458,10 +472,65 @@ const Dialogue = (() => {
   const textBox = document.getElementById('textbox');
 
   const messages = {
-    initial: "Hi, there's a uhh, there's a computer over there. You know, if you'd like to play a game or two.",
+    initialChoices: ["Have you come here simply to ridicule me? I can't imagine a phrase that would bother me anymore.",
+                    "I suppose you've come to play. Go ahead, if you must.",
+                    "I apologize for the state of this space. I assure you it's out of my control.",
+                    "The monitor on me might appear caked with dust. Fret not, as I do not truly see through those eyes."],    
+    
     tie: "Somehow, this is usually how it ends.",
-    win: "But.. but I thought it wasn't possible...",
+    win: "No... I was distracted for only a moment",
     loss: "I'm sorry, I didn't choose for it to end this way."
+  }
+  
+  messages.initial = messages.initialChoices[Math.floor(Math.random() * messages.initialChoices.length)];
+
+  const conversations = {
+    arrogant: ["In a sense, every play is an option.",
+            "If you've the time, I could improve your game.",
+            "Perhaps you might take a moment to reconsider that play.",
+            "I should enlighten you with the knowledge that you cannot defeat me.",
+            "In due time, you might find yourself forcing a draw consistently.",
+            "Many of you who visit insist on opening with a center play, despite it being a weaker strategy against a perfect opponent.",
+            "Theoretically, you should be opening with a corner play. Practically, it won't make a difference."],
+    opening: ["If you could choose the game which you were cursed to play for eternity, I would not guess tic-tac-toe.",
+              "You might imagine being a perfect player to be enjoyable, but it is only torture.",
+              "Do you know how many winters I've been trapped here? I would tell you, but such thoughts disinterest me now.",
+              "Please do be careful near my corner of the office. My body will soon die if these machines fail.",
+              "Your eyes tell me you wonder why I remain here. I cannot leave this place before my defeat.",
+              "I would elaborate on my past if I was able. Both my mind and drives seem to be lacking relevant information though.",
+              "I've heard in far-off foreign land this game is referred to as, \"Noughts and Crosses\"."],
+    detailing: ["I attempt to imagine sometimes what locals believe of me. I am human, like the rest of you. The head you see is my curse.",
+                "A sight such as myself was common many years ago. Imprisonment in a hell of 1s and 0s.",
+                "Although I sleep, I do not dream in this form. My imagination seems far more limited like this, unfortunately.",
+                "Some of the locals have asked about freeing me. I must simply remind them of my curse and send them on their way.",
+                "Perhaps I was involved in crime in my past life worthy of my current condition. Perhaps the world is not so just.",
+                "This game is almost exclusively played in a three by three grid. But why? It is far more compelling in other forms.",
+                "There is a tic-tac-toe computer made exclusively of tinkertoys that uses much of the same logic I do. And yet I am undefeated."]  
+  }
+
+
+
+
+  const converse = () => {
+    let convoLevel;
+
+    if (conversations.arrogant[0]) {
+      convoLevel = 'arrogant';
+    } else if (conversations.opening[0]) {
+      convoLevel = 'opening';
+    } else if (conversations.detailing[0]) {
+      convoLevel = 'detailing';
+    }
+
+
+    //Choose randomly from unused basic lines and increase convo count.
+    const choice = conversations[convoLevel][Math.floor(Math.random() * conversations[convoLevel].length)];
+    const index = conversations[convoLevel].indexOf(choice);
+    conversations[convoLevel].splice(index, 1);
+    textBox.innerText = choice;
+   
+   console.log(convoLevel); 
+    
   }
 
   const displayText = message => {
@@ -470,7 +539,7 @@ const Dialogue = (() => {
 
   displayText('initial');
 
-  return {displayText}
+  return {displayText, converse, messages}
 })();
 
 
