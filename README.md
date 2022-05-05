@@ -30,3 +30,4 @@ DONEISH-Add speech text for Isaac
 -fix sad face aspect ratio
 -Add scrolling dialogue for previously seen stuff
 -Isaac will only progress dialogue if you can chain together ties
+-Fix buttons

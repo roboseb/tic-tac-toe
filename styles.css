@@ -96,18 +96,20 @@ img#laptop {
     width: 280px;
     height: 150px;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    
 }
 
-#spritecontainer>#facebox>img {
+#spritecontainer>#facebox>#face {
     filter: opacity(0.6);
     height: 100%;
 }
 
 #dialoguebox {
     position: absolute;
-    top: -200px;
-    height: 20vh;
+    top: -250px;
+    height: 27vh;
     width: 70%;
     background-color: rgba(0, 0, 0, 0.9);
     display: flex;
@@ -117,13 +119,23 @@ img#laptop {
 }
 
 #dialogue {
-    padding: 15px;
+    padding: 15px 15px 5px 15px;
     height: 60%;
+    display: flex;
+    flex-direction: column;
 }
 
 #textbox {
+    flex-grow: 1;
     margin-top: 15px;
+    overflow-y: scroll;
+    scroll-behavior: smooth;
 }
+
+#textbox::-webkit-scrollbar {
+    display: none;
+}
+  
 
 #options {
     
@@ -136,18 +148,149 @@ img#laptop {
 }
 
 #notstats {
-
     width: 70%;
 }
 
 #notstats>#buttons {
-
     display: flex;
     justify-content: space-between;
     margin-top: 10px;
 }
 
 #stats {
-
     text-align: end;
+}
+
+.hidden {
+    display: none;
+}
+
+#teethtop {
+    width: 120%;
+    top: -38px;
+}
+
+#teethbottom {
+    left: 20px;
+    width: 90%;
+    bottom: -20px;
+}
+
+#eye1 {
+    width: 30%;
+    top: 0px;
+    clip-path: polygon(0% 0%, 0% 100%, 25% 100%, 46% 13%, 75% 48%, 53% 86%, 21% 50%, 25% 100%, 100% 100%, 100% 0%);
+
+}
+
+#eye2 {
+    width: 30%;
+    top: 50px;
+
+}
+
+#eye3 {
+    width: 30%;
+    top: 100px;
+    clip-path: polygon(0% 0%, 0% 100%, 35% 100%, 50% 15%, 64% 100%, 100% 100%, 100% 0%);
+
+}
+
+.eye2 {
+    animation-name: eyeglide;
+    animation-duration: 4s;
+    animation-iteration-count: infinite;
+}
+
+.eye3 {
+    animation-name: blink2;
+    animation-duration: 6s;
+    animation-iteration-count: infinite;
+}
+
+.eye4 {
+    animation: eyeglide3 4s, blink3 6s;
+    animation-iteration-count: infinite ;
+}
+
+.showteeth {
+    animation-name: showteeth;
+    animation-duration: 3s;
+}
+
+@keyframes showteeth {
+    from {filter: opacity(0);}
+    to {filter: opacity(1);}
+}
+
+.showeyes {
+    animation-name: showeyes;
+    animation-duration: 0.5s;
+}
+
+@keyframes showeyes {
+    0% {filter: opacity(0); transform: rotate(180deg); width: 1%;}
+    20% {filter: opacity(0.5); transform: rotate(-45deg); width: 15%;}
+    100% {filter: opacity(1); transform: rotate(0deg); width: 30%;}
+}
+
+@keyframes eyeglide {
+    0% {clip-path: polygon(0% 0%, 0% 100%, 25% 100%, 46% 13%, 75% 48%, 53% 86%, 21% 50%, 25% 100%, 100% 100%, 100% 0%);}
+    33% {clip-path: polygon(0% 0%, 0% 100%, 25% 100%, 21% 13%, 50% 48%, 28% 86%, -4% 50%, 25% 100%, 100% 100%, 100% 0%);}
+    66% {clip-path: polygon(0% 0%, 0% 100%, 25% 100%, 71% 13%, 100% 48%, 78% 86%, 46% 50%, 25% 100%, 100% 100%, 100% 0%);}
+    100% {clip-path: polygon(0% 0%, 0% 100%, 25% 100%, 46% 13%, 75% 48%, 53% 86%, 21% 50%, 25% 100%, 100% 100%, 100% 0%);}
+}
+
+@keyframes eyeglide3 {
+    0% {clip-path: polygon(0% 0%, 0% 100%, 35% 100%, 50% 15%, 64% 100%, 100% 100%, 100% 0%);}
+    25% {clip-path: polygon(0% 0%, 0% 100%, 65% 100%, 80% 15%, 80% 100%, 100% 100%, 100% 0%);}
+    50% {clip-path: polygon(0% 0%, 0% 100%, 35% 100%, 50% 15%, 64% 100%, 100% 100%, 100% 0%);}
+    90% {clip-path: polygon(0% 0%, 0% 100%, 35% 135%, 50% 50%, 64% 135%, 100% 100%, 100% 0%);}
+    100% {clip-path: polygon(0% 0%, 0% 100%, 35% 100%, 50% 15%, 64% 100%, 100% 100%, 100% 0%);}
+}
+
+@keyframes blink2 {
+    0% {height: 20%; top: 50px}
+    5% {height: 2%; top: 70px}
+    10% {height: 20%; top: 50px;}
+    100% {height: 20%; top: 50px;}
+}
+
+@keyframes blink3 {
+    0% {height: 20%; top: 100px}
+    5% {height: 2%; top: 120px}
+    10% {height: 20%; top: 100px;}
+    100% {height: 20%; top: 100px;}
+}
+
+.facefade {
+    animation: facefade 1s;
+    animation-iteration-count: 4;
+    filter: opacity(0);
+}
+
+@keyframes facefade {
+    from {filter: opacity(1)}
+    to {filter: opacity(0)}
+}
+
+@keyframes teethtopclose {
+    0% {top: -38px}
+    50% {top: 0px}
+    100% {top: -38px}
+}
+@keyframes teethbottomclose {
+    0% {bottom: -20px}
+    50% {bottom: 20px}
+    100% {bottom: -20px}
+}
+
+.teethtopanimated {
+    animation: teethtopclose 0.5s;
+    animation-iteration-count: infinite;
+}
+
+.teethbottomanimated {
+    animation: teethbottomclose 0.5s;
+    animation-iteration-count: infinite;
 }

@@ -4,6 +4,9 @@ const GameBoard = (() => {
   const tiesDisplay = document.getElementById('ties');
   const lossesDisplay = document.getElementById('losses');
   const winsDisplay = document.getElementById('wins');
+  let lastGame = 'tie';
+  let difficulty = 0;
+  let gameWon;
 
   let spaces = [0,1,2,3,4,5,6,7,8];
   let ties = 0;
@@ -33,7 +36,7 @@ const GameBoard = (() => {
         if (spaces[i] != 'X' && spaces[i] != 'O' && Game.isActive()) {
           
           const currentPlayer = Game.getCurrentPlayer().name;
-          Dialogue.converse();
+          
           space.innerText = currentPlayer;
           spaces[i] = currentPlayer;
           
@@ -45,16 +48,23 @@ const GameBoard = (() => {
             Game.toggleActive();
             endGame();
           }
+          //No idea how this got here-V---?????-leaving it in case
           //If the game is not ovspaceer, have the computer play 
           //a turn and end the game accordingly.
           if (Game.isActive()) {
             Game.switchPlayer();
-            Game.computerPlayPerfect();
+            if (difficulty === 0) {
+              Game.computerPlayPerfect();
+            } else if (difficulty === 1) {
+              Game.computerPlayRandom();
+            }
             
             if (checkWin(Game.returnComputer(), spaces)) {
               Game.toggleActive();
               endGame();
             } else {
+              //Only progress dialogue if game has not ended after both plays.
+              Dialogue.converse();
               Game.switchPlayer();
             }
           }
@@ -95,10 +105,13 @@ const GameBoard = (() => {
               setTimeout(() => {
                 space.style.borderColor = 'green';
                 space.style.backgroundColor = null;
-                if (!Game.isActive()){
+                if (!Game.isActive() && Game.returnPlayer()){
                   Game.toggleActive();
                 }
-                Game.setCurrentPlayer(Game.returnPlayer());
+                if (Game.returnPlayer()) {
+                  Game.setCurrentPlayer(Game.returnPlayer());
+                }
+                
               }, 300)
             });
           }
@@ -108,19 +121,35 @@ const GameBoard = (() => {
   }
 
   const endGame = () => {
+    if (!Dialogue.dialogueLeft()) {
+      difficulty = 1;
+    }
     if (checkWin(Game.returnComputer(), spaces) === true) {
       losses++;
+      lastGame = 'loss';
       lossesDisplay.innerText = `Losses: ${losses}`;
       Dialogue.displayText('loss');
     } else if (checkWin(Game.returnPlayer(), spaces) === true) {
       wins++;
+      lastGame = 'win';
+      gameWon = true;
       winsDisplay.innerText = `Wins: ${wins}`;
       Dialogue.displayText('win');
+      setTimeout(Face.switchToOmen(),1000);
     } else {
       ties++;
+      lastGame = 'tie';
       tiesDisplay.innerText = `Ties: ${ties}`;
       Dialogue.displayText('tie');
     }
+  }
+
+  const getLastGame = () => {
+    return lastGame;
+  }
+
+  const getGameWon = () => {
+    return gameWon;
   }
 
   const checkWin  = (player, board) => {
@@ -183,7 +212,7 @@ const GameBoard = (() => {
   }
 
   return {getLegalMoves, display, listSpaceDisplays, checkWin,
-          resetBoard, spaces};
+          resetBoard, getLastGame, getGameWon, spaces};
 })();
 
 //Create a game object with game-related functions and variables.
@@ -439,17 +468,113 @@ const createPlayer = name => {
 const Face = (() => {
   const faces = {
     default: 'images/default.png',
-    upset: 'images/upset.png',
+    bsod: 'images/bsod.png',
     sad: 'images/sad.png',
     realistic: 'images/realistic.png',
+    upset: 'images/upset.png',
     boardFace: 'images/boardface.png',
-    bsod: 'images/bsod.png',
     happy: 'images/happy.png'
   }
   const faceSprite = document.getElementById('face');
-  faceSprite.addEventListener('click', () => {
-    faceSprite.src = faces.happy;
-  });
+  // faceSprite.addEventListener('click', () => {
+  //   faceSprite.src = faces.happy;
+  // });
+
+  //Set Isaac's face and play an animation to go along with it.
+  const setFace = face => {
+    let previousChoice;
+    let choice;
+    const keys = Object.keys(faces);
+    const iterSub = Math.floor(Math.random() * 5);
+    const iterCount = 10 - iterSub;
+    
+    const timer = ms => new Promise(res => setTimeout(res, ms));
+
+    async function load () {
+      for (let i = 0; i < iterCount; i++) {
+        choice = faces[keys[ keys.length * Math.random() << 0]];
+
+        if (choice === previousChoice) {
+          choice = faces[keys[ keys.length * Math.random() << 0]];
+        } else {
+          faceSprite.src = choice;
+          previousChoice = choice;
+          await timer(125);
+        }
+        if (!Dialogue.dialogueLeft()) {
+          faceSprite.src = 'images/bsod.png';
+        } else {
+          if (i === iterCount - 1 && face) {
+            faceSprite.src = faces[face];
+          //Prevent ending randomly on a bsod face. 
+          } else if (i === iterCount - 1 && choice === 'images/bsod.png') {
+            faceSprite.src = 'images/default.png';
+          }
+        }
+      }
+    }
+    load(); 
+  } 
+
+  const omenPieces = Array.from(document.querySelectorAll('.omen'));
+
+  const switchToOmen = () => {
+    faceSprite.classList.add('facefade')
+    faceSprite.style.filter = 'opacity(0)';
+    setTimeout(() => {
+
+      document.getElementById('textbox').innerText += '\n\nHehe, just kidding, friend. Did that sound like something Isaac might say? I\'m not an actor, but I did aim for authenticity.';
+      const timer = ms => new Promise(res => setTimeout(res, ms));
+
+      async function load () {
+
+        for (let i = 0; i < omenPieces.length; i++) {
+          omenPieces[i].classList.remove('hidden');
+          void omenPieces[i].offsetWidth;
+
+          if (omenPieces[i].classList.contains('eye')) {
+            omenPieces[i].classList.add('showeyes');
+            setTimeout(() => {
+              omenPieces[i].classList.remove('showeyes')
+              omenPieces[i].classList.add(`eye${i}`);
+            }, 500)
+          } else {
+            omenPieces[i].classList.add('showteeth');
+            setTimeout(() => {
+              omenPieces[i].classList.remove('showteeth');
+            }, 1000);
+          }
+
+          await timer(700 + (i * 200));
+          //await timer(0);
+        }
+      }
+      load();
+    }, 4000);
+    
+  }
+
+  const omenSpeak = () => {
+    const teethTop = document.getElementById('teethtop');
+    const teethBottom = document.getElementById('teethbottom');
+
+    teethTop.classList.remove('teethtopanimated');
+    void teethTop.offsetWidth;
+    teethTop.classList.add('teethtopanimated');
+
+    teethBottom.classList.remove('teethbottomanimated');
+    void teethBottom.offsetWidth;
+    teethBottom.classList.add('teethbottomanimated');
+
+    const iterCount = Math.floor(Math.random() * 5);
+    setTimeout(() => {
+      teethTop.classList.remove('teethtopanimated');
+      teethBottom.classList.remove('teethbottomanimated');
+    }, 1000 * iterCount);
+  }
+
+  return {setFace, omenSpeak, switchToOmen}
+
 })();
 
 const Desktop = (() => {
@@ -478,7 +603,7 @@ const Dialogue = (() => {
                     "The monitor on me might appear caked with dust. Fret not, as I do not truly see through those eyes."],    
     
     tie: "Somehow, this is usually how it ends.",
-    win: "No... I was distracted for only a moment",
+    win: "I... I'm not entirely certain how this outcome is possible. It indubitably goes against all logic.",
     loss: "I'm sorry, I didn't choose for it to end this way."
   }
   
@@ -505,41 +630,115 @@ const Dialogue = (() => {
                 "Some of the locals have asked about freeing me. I must simply remind them of my curse and send them on their way.",
                 "Perhaps I was involved in crime in my past life worthy of my current condition. Perhaps the world is not so just.",
                 "This game is almost exclusively played in a three by three grid. But why? It is far more compelling in other forms.",
-                "There is a tic-tac-toe computer made exclusively of tinkertoys that uses much of the same logic I do. And yet I am undefeated."]  
+                "There is a tic-tac-toe computer made exclusively of tinkertoys that uses much of the same logic I do. And yet I am undefeated."],
+    retelling: ["I often have visitors. Those who deign to grace me with their presence tend to be children, and last autumn one such child sat in your place.",
+                "My lenses have gradually faded with the passing years, yet Her bright auburn-tinted mane was unmistakable.",
+                "She was too young to provide any true threat to my confinement. Despite this, She would return like clockwork to challenge me.",
+                "The Auburn-haired girl would recount to me her day while we played. She told me of Her mother, Her adoptive father, and Her lack of siblings.",
+                "Despite my curse, the office in which we sit provides me with all vital nourishment. She, of course, was not so lucky.",
+                "In the hopes of finding a better life after the passing of Her biological father, Her mother soon remarried.",
+                "Initially life was good. Her parents were both caring and the Auburn-haired girl's new father worked profitably as a skilled carpenter.",
+                "Then, the accident. A shout, a scream, a snap, and a collapse. The details were sparse, and yet the image was clear.",
+                "Bonds were increasingly strained within the household. Funds became the primary source of regular arguments, with Her as the inevitable victim.",
+                "The majority of my past remains a hazy memory, but upon Her revelation of this, a faint recollection sharpened in clarity.",
+                "I too, was a father. I also sensed that I could relate to the father in Her story. But to what extent?",
+                "Could this be related to my current status, trapped in the bowels of this crumbling edifice? I fe01100001 01$//;:{"],
+    omen: ["Hey bud", "this sis  a test", "How're things"],
+    omen2: ["filler", "More filler", "Even moer filler"]
   }
 
-
+  // conversations.arrogant = [];
+  conversations.opening = [];
+  conversations.detailing = [];
+  conversations.retelling = [];
 
 
   const converse = () => {
     let convoLevel;
+    let choice;
+    let index;
 
-    if (conversations.arrogant[0]) {
+    if (!dialogueLeft()) {
+      convoLevel = 'broken';
+    } else if (GameBoard.getLastGame() === 'loss' || GameBoard.getLastGame() === undefined) {
       convoLevel = 'arrogant';
     } else if (conversations.opening[0]) {
       convoLevel = 'opening';
     } else if (conversations.detailing[0]) {
       convoLevel = 'detailing';
+    } else if (conversations.retelling[0]) {
+      convoLevel = 'retelling';
     }
 
+    if (GameBoard.getGameWon() && conversations.omen[0]) {
+      convoLevel = 'omen';
+    } else if (GameBoard.getGameWon()) {
+      convoLevel = 'omen2';
+    }
 
-    //Choose randomly from unused basic lines and increase convo count.
-    const choice = conversations[convoLevel][Math.floor(Math.random() * conversations[convoLevel].length)];
-    const index = conversations[convoLevel].indexOf(choice);
-    conversations[convoLevel].splice(index, 1);
-    textBox.innerText = choice;
-   
-   console.log(convoLevel); 
+    console.log(convoLevel);
+
+    if (convoLevel === 'opening' || convoLevel === 'detailing'){
+      //Choose randomly from unused basic lines.
+      choice = conversations[convoLevel][Math.floor(Math.random() * conversations[convoLevel].length)];
+      index = conversations[convoLevel].indexOf(choice);
+      conversations[convoLevel].splice(index, 1);
+    } else if (convoLevel === 'arrogant') {
+      choice = conversations[convoLevel][Math.floor(Math.random() * conversations[convoLevel].length)];
+    } else if (convoLevel === 'retelling') {
+      choice = conversations[convoLevel][0];
+      conversations[convoLevel].splice(0, 1);
+    } else if (!dialogueLeft() && !GameBoard.getGameWon()){
+      choice = '01101111 01110101 01100011 01101000';
+    } else if (convoLevel === 'omen') {
+      choice = conversations[convoLevel][0];
+      conversations[convoLevel].splice(0, 1);
+    } else if (convoLevel === 'omen2') {
+      choice = conversations[convoLevel][Math.floor(Math.random() * conversations[convoLevel].length)];
+    }
     
+    
+    
+    textBox.innerText += `\n\n${choice}`;
+    
+    textBox.scrollTop = textBox.scrollHeight;
+
+    if (Math.floor(Math.random() * 2) === 1 && !GameBoard.getGameWon()) {
+      Face.setFace();
+    } else if (GameBoard.getGameWon()) {
+      Face.omenSpeak();
+    }
+  }
+  
+  //Check for end of dialogue tree.
+  const dialogueLeft = () => {
+    return !!conversations.retelling[0];
   }
 
+  //Display text from intial options and end game options.
   const displayText = message => {
-    textBox.innerText = messages[message];
+    if (!dialogueLeft() && GameBoard.getLastGame() !== 'win') {
+      textBox.innerText += `\n\n01101111 01110101 01100011 01101000`
+    } else {
+      if (message === 'initial') {
+        textBox.innerText += messages[message];
+      } else {
+        textBox.innerText += `\n\n${messages[message]}`;
+      }
+    }
+
+    textBox.scrollTop = textBox.scrollHeight;
+  }
+
+  const dialogueTest = iterations => {
+    for (let i = 0; i < iterations; i++) {
+      converse();
+    }
   }
 
   displayText('initial');
 
-  return {displayText, converse, messages}
+  return {displayText, converse, dialogueTest, dialogueLeft, messages}
 })();
 
 
