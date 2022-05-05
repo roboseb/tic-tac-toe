@@ -1,7 +1,8 @@
 body {
     position: relative;
     margin: 0;
-
+    font-family: 'Courier Prime', monospace, sans-serif;
+    font-size: 0.8rem;
 }
 
 #container {
@@ -27,7 +28,7 @@ body {
 .space {
     border-style: solid;
     border-color: green;
-    font-size: 200%;
+    font-size: 250%;
     text-align: center;
     text-justify: center;
     line-height: 100%;
@@ -293,4 +294,12 @@ img#laptop {
 .teethbottomanimated {
     animation: teethbottomclose 0.5s;
     animation-iteration-count: infinite;
+}
+
+button {
+    font-family: 'Courier Prime', monospace, sans-serif;
+    font-size: 0.75rem;
+    font-weight: bold;
+    background-color: #c1b99f;
+    border-style: none;
 }

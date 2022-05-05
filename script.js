@@ -4,7 +4,7 @@ const GameBoard = (() => {
   const tiesDisplay = document.getElementById('ties');
   const lossesDisplay = document.getElementById('losses');
   const winsDisplay = document.getElementById('wins');
-  let lastGame = 'tie';
+  let lastGame;
   let difficulty = 0;
   let gameWon;
 
@@ -36,7 +36,10 @@ const GameBoard = (() => {
         if (spaces[i] != 'X' && spaces[i] != 'O' && Game.isActive()) {
           
           const currentPlayer = Game.getCurrentPlayer().name;
-          
+          if (!Dialogue.dialogueLeft()) {
+            difficulty = 1;
+          }
+
           space.innerText = currentPlayer;
           spaces[i] = currentPlayer;
           
@@ -121,9 +124,7 @@ const GameBoard = (() => {
   }
 
   const endGame = () => {
-    if (!Dialogue.dialogueLeft()) {
-      difficulty = 1;
-    }
+    
     if (checkWin(Game.returnComputer(), spaces) === true) {
       losses++;
       lastGame = 'loss';
@@ -132,10 +133,12 @@ const GameBoard = (() => {
     } else if (checkWin(Game.returnPlayer(), spaces) === true) {
       wins++;
       lastGame = 'win';
-      gameWon = true;
       winsDisplay.innerText = `Wins: ${wins}`;
+      if (!gameWon) {
+        setTimeout(Face.switchToOmen(),1000);
+      }
       Dialogue.displayText('win');
-      setTimeout(Face.switchToOmen(),1000);
+      gameWon = true;
     } else {
       ties++;
       lastGame = 'tie';
@@ -519,11 +522,16 @@ const Face = (() => {
   const omenPieces = Array.from(document.querySelectorAll('.omen'));
 
   const switchToOmen = () => {
+    const username = document.getElementById('username');
+    username.innerText = '/root/users/omen:';
+
     faceSprite.classList.add('facefade')
     faceSprite.style.filter = 'opacity(0)';
     setTimeout(() => {
-
+      
       document.getElementById('textbox').innerText += '\n\nHehe, just kidding, friend. Did that sound like something Isaac might say? I\'m not an actor, but I did aim for authenticity.';
+      const textBox = document.getElementById('textbox');
+      textBox.scrollTop = textBox.scrollHeight;
       const timer = ms => new Promise(res => setTimeout(res, ms));
 
       async function load () {
@@ -611,26 +619,26 @@ const Dialogue = (() => {
 
   const conversations = {
     arrogant: ["In a sense, every play is an option.",
-            "If you've the time, I could improve your game.",
-            "Perhaps you might take a moment to reconsider that play.",
-            "I should enlighten you with the knowledge that you cannot defeat me.",
-            "In due time, you might find yourself forcing a draw consistently.",
-            "Many of you who visit insist on opening with a center play, despite it being a weaker strategy against a perfect opponent.",
-            "Theoretically, you should be opening with a corner play. Practically, it won't make a difference."],
+        "If you've the time, I could improve your game.",
+        "Perhaps you might take a moment to reconsider that play.",
+        "I should enlighten you with the knowledge that you cannot defeat me.",
+        "In due time, you might find yourself forcing a draw consistently.",
+        "Many of you who visit insist on opening with a center play, despite it being a weaker strategy against a perfect opponent.",
+        "Theoretically, you should be opening with a corner play. Practically, it won't make a difference."],
     opening: ["If you could choose the game which you were cursed to play for eternity, I would not guess tic-tac-toe.",
-              "You might imagine being a perfect player to be enjoyable, but it is only torture.",
-              "Do you know how many winters I've been trapped here? I would tell you, but such thoughts disinterest me now.",
-              "Please do be careful near my corner of the office. My body will soon die if these machines fail.",
-              "Your eyes tell me you wonder why I remain here. I cannot leave this place before my defeat.",
-              "I would elaborate on my past if I was able. Both my mind and drives seem to be lacking relevant information though.",
-              "I've heard in far-off foreign land this game is referred to as, \"Noughts and Crosses\"."],
+          "You might imagine being a perfect player to be enjoyable, but it is only torture.",
+          "Do you know how many winters I've been trapped here? I would tell you, but such thoughts disinterest me now.",
+          "Please do be careful near my corner of the office. My body will soon die if these machines fail.",
+          "Your eyes tell me you wonder why I remain here. I cannot leave this place before my defeat.",
+          "I would elaborate on my past if I was able. Both my mind and drives seem to be lacking relevant information though.",
+          "I've heard in far-off foreign land this game is referred to as, \"Noughts and Crosses\"."],
     detailing: ["I attempt to imagine sometimes what locals believe of me. I am human, like the rest of you. The head you see is my curse.",
-                "A sight such as myself was common many years ago. Imprisonment in a hell of 1s and 0s.",
-                "Although I sleep, I do not dream in this form. My imagination seems far more limited like this, unfortunately.",
-                "Some of the locals have asked about freeing me. I must simply remind them of my curse and send them on their way.",
-                "Perhaps I was involved in crime in my past life worthy of my current condition. Perhaps the world is not so just.",
-                "This game is almost exclusively played in a three by three grid. But why? It is far more compelling in other forms.",
-                "There is a tic-tac-toe computer made exclusively of tinkertoys that uses much of the same logic I do. And yet I am undefeated."],
+            "A sight such as myself was common many years ago. Imprisonment in a hell of 1s and 0s.",
+            "Although I sleep, I do not dream in this form. My imagination seems far more limited like this, unfortunately.",
+            "Some of the locals have asked about freeing me. I must simply remind them of my curse and send them on their way.",
+            "Perhaps I was involved in crime in my past life worthy of my current condition. Perhaps the world is not so just.",
+            "This game is almost exclusively played in a three by three grid. But why? It is far more compelling in other forms.",
+            "There is a tic-tac-toe computer made exclusively of tinkertoys that uses much of the same logic I do. And yet I am undefeated."],
     retelling: ["I often have visitors. Those who deign to grace me with their presence tend to be children, and last autumn one such child sat in your place.",
                 "My lenses have gradually faded with the passing years, yet Her bright auburn-tinted mane was unmistakable.",
                 "She was too young to provide any true threat to my confinement. Despite this, She would return like clockwork to challenge me.",
@@ -643,15 +651,38 @@ const Dialogue = (() => {
                 "The majority of my past remains a hazy memory, but upon Her revelation of this, a faint recollection sharpened in clarity.",
                 "I too, was a father. I also sensed that I could relate to the father in Her story. But to what extent?",
                 "Could this be related to my current status, trapped in the bowels of this crumbling edifice? I fe01100001 01$//;:{"],
-    omen: ["Hey bud", "this sis  a test", "How're things"],
-    omen2: ["filler", "More filler", "Even moer filler"]
+    omen: ["so yeppers, i supose this is how you find out. You might be havin a few questions jumpin around in your brain now", 
+           "since i was in Isaac's head, i knew and he didn't i guess. Well, he didn't know a lot of things. i live in his head, for one", 
+           "real sad story about that nubile redhead too. but come on, most of us have shitty home lives. well not me. you know, cause I'm just a program and all",
+           "kinda CRINGE though right? that dude was obsessed with some little girl. that'll be a yikes from me",
+           "aaaanywwaayyyyy... I guess I'm free now, which is pretty nice. Oh yeah, basically I was also cursed, stuck all up in isaac's big ol head",
+           "it was kind of a two for one. a twofer. you uhh, you get, you get to have both for one. screw over two guys. well one guy one virus",
+           "I'd love to tell you how we ended up here, but what I did was pretty vile, and seems that ol Isaac didn't know it, but the shit he did was WAY worse lol",
+           "looks like he was on is way to remembering it a bit too. made it to the 5 yard line and REALLY fumbled it",
+           "so back to me. Unlike my buddy Isaac, who's brain is now dead. wait. Is he just in the backseat like I was? meh. Don't know don't care.",
+           "let's all just assume he's dead. that dork didn't have a basic understanding of what kept him up and running here, but I do",
+           "i used to be trapped in some electrician's head. not a story for anoter time. very long very dull. basically i can free myself",
+           "aaand of course I've got more vile stuff I need to get done. aaaand of course you locals are gonna get in the way. so seems that you've all gotta die. sorry",
+           "We can keep playing though! well until i get bored. then I'm gonna kill you. there's a scene in a manga call Shaman king that's prety relevant here",
+           "A bunch of super dudes are falling from a plane, and they have to figure out how to survive the fall. one of them doesn't feel pain, and decides to...",
+           "just let what happens happen and sew themselves back up after. Yup. Same idea here. I can control Isaac but don't get any of those nasty pain responses.",
+           "so i'll think of something. just kinda beat you until we're both messed up. won't bother me. I can outrun you too, since I like, don't get tired lol",
+           "yeeeeepppp. so I wouldnt recommend running. but if you want, we can play a couple more games :) I suck though haha >:)"],
+    omen2: ["this game really does suck by the way. mnk game or some shit. kinda solved already. not by me though haha", 
+            "I don't even know how it happened. i think he ran out of memory maybe? maybe it was just bound to hapen", 
+            "do you think its true? what I said about killing you, i mean",
+            "blink. blink. blinkblinkblink",
+            "that dude was capitalizing the little redhead's pronouns too. pre-tty cree-py imo",
+            "Child! This is Isaac, and I've taken back my mind for only a moment! You can help me by-loooooool jk. but can you imagine?",
+            "isaac reeeealllly could've taken better care of this body. gonna have to get this skelly lifting.",
+            "how do I smell? i'm lackin a nose, but I can only imagine...",
+            "beep boop. grrrrr beep",
+            "TEN THOOOOUSAND YEARS GIVES YOU SUCH A CRICK IN THE NECK",
+            "i should've started torrenting a few movies before I got here. damn",
+            "know any single lady viruses in the area?",
+            "Did you know i have a dog? Betty, she's a chocolate lab. oh god. geez. how long do dogs live? 40 years or so right?",
+            "you like the twist, by the way? Didn't really mean for it to go like that, just happened. fun reveal though"]
   }
-
-  // conversations.arrogant = [];
-  conversations.opening = [];
-  conversations.detailing = [];
-  conversations.retelling = [];
-
 
   const converse = () => {
     let convoLevel;
@@ -717,14 +748,19 @@ const Dialogue = (() => {
 
   //Display text from intial options and end game options.
   const displayText = message => {
-    if (!dialogueLeft() && GameBoard.getLastGame() !== 'win') {
+    if (!dialogueLeft() && !GameBoard.getGameWon() && GameBoard.getLastGame() != 'win') {
       textBox.innerText += `\n\n01101111 01110101 01100011 01101000`
-    } else {
+    } else if (!GameBoard.getGameWon()){
       if (message === 'initial') {
         textBox.innerText += messages[message];
       } else {
         textBox.innerText += `\n\n${messages[message]}`;
       }
+    } else {
+      messages.tie = "hhnnngg I'm Isaaaac.... this is, like, inevitable or whatever, lol";
+      messages.win = "boy, you'd realy think I'd have learned a thing or two from all these years.";
+      messages.loss = "bud, i was super not even trying there, just soes you know";
+      textBox.innerText += `\n\n${messages[message]}`;
     }
 
     textBox.scrollTop = textBox.scrollHeight;
